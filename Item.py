@@ -3,7 +3,7 @@ import json
 class Item:
 # (by XIE) class to represent an item in the system
     
-    count=1 #for unique item IDs
+
     
     def __init__(self, name, contact, item_type, item_description="", status=False,item_id=None): 
     #initializes an Item object with provided attributes
@@ -12,11 +12,7 @@ class Item:
         self.item_type = item_type #e.g., electronics, clothing, etc.
         self.item_description = item_description
         self.status = status #False means unclaimed, True means claimed
-        if item_id is None:
-            self.item_id = Item.count
-            Item.count += 1
-        else:
-            self.item_id = item_id
+        self.item_id = item_id #unique identifier for the item
         
 
   
