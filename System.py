@@ -8,7 +8,11 @@ class System:
         #Justin
         self.filename = filename
         self.items = []  
+        self.max_id = 0
+        self.load_items()
     
+    def load_items(self):
+        pass
     def add_item(self, item):
         #Justin
         self.items.append(item)
@@ -29,6 +33,14 @@ class System:
     def claim_item(self, item_name, owner_contact):
         #Charlotte
         pass
+
+    def get_new_item_id(self):
+        # (by XIE) generate a new item_id for a new item
+        self.max_id+=1
+        self.save_items(self.filename)  #change save_items(...) if parameters are changed
+        return self.max_id
+    
+    
     def update_item(self,item_id, **kwargs): 
         # (by XIE) allow updating item information based on item_id
         for item in self.items:
