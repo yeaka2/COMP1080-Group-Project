@@ -32,6 +32,22 @@ class System:
         pass
     def claim_item(self, item_name, owner_contact):
         #Charlotte
+        """Claim your lost item (operation by the owner)"""
+        for item in self.items:
+            if item.item_name == item_name:
+                # If the item has already been claimed
+                if hasattr(item, "claimed") and item.claimed:
+                    print(" The item has been claimed.")
+                    return False
+                # Modify item status
+                item.claimed = True
+                item.owner_contact = owner_contact
+                self.save_items(self.filename)
+                print(f" Item '{item_name}' has been claimed by {owner_contact}.")
+                return True
+        print(f" No item named '{item_name}' was found.")
+        return False
+
         pass
 
     def get_new_item_id(self):
@@ -56,9 +72,43 @@ class System:
 
     def login(self):
         #Charlotte
+        """Login portal"""
+        print("===== Login interface =====")
+        username = input("Please enter your username： admin / owner / finder：").strip()
+        if username == "admin":
+            self.admin_menu()
+        elif username == "owner":
+            contact = input("Please fill in your contact information (mobile phone number or email address):")
+            self.owner_menu(contact)
+        elif username == "finder":
+            self.finder_menu()
+        else:
+            print("Invalid username, please re-enter.")
+
         pass
     def main_menu(self):
         #Charlotte
+        """Main Menu"""
+        while True:
+            print("\n===== Lost and Found System =====")
+            print("1. Log in")
+            print("2. Browse items")
+            print("3. Search items")
+            print("0. Log out")
+            choice = int(input("Please enter options:"))
+
+            if choice == "1":
+                self.login()
+            elif choice == "2":
+                self.list_items()
+            elif choice == "3":
+                keyword = input("Please enter keywords:")
+                self.search_items(keyword)
+            elif choice == "0":
+                print(" bye!")
+                break
+            else:
+                print(" Invalid option, please try again.")
         pass    
     def owner_menu(self, owner_contact):
         #LUO
@@ -88,4 +138,5 @@ if __name__ == "__main__":
     print(item)
     result = system.update_item(2, item_description="test")
     print("Return:", result)
+
 """
