@@ -1,0 +1,202 @@
+import json
+from Item import Item
+
+class System:
+    def __init__(self,filename="items.json"):
+        #Justin
+        self.filename = filename # JSON file to store items
+        self.load_items(self.filename) # load existing items from file
+        self.count = 0 # count the number of items
+    
+    def load_items(self, filename=None):
+        #Justin
+        if not filename:
+            filename = self.filename
+        try:
+            with open(filename, "r") as f:
+                items_data = json.load(f)
+                self.items = [Item.from_dict(item) for item in items_data]
+
+        # if file not found, start with empty list
+        except FileNotFoundError:
+            self.items = []
+        except json.JSONDecodeError:
+            self.items = []
+
+    def add_item(self, item):
+        #Justin
+
+        # prompt the user to enter item details
+        name = input("Enter item name: ")
+        contact = input("Enter owner contact information: ")
+        item_type = input("Enter item type (e.g., electronics, clothing): ")
+        item_description = input("Enter item description: \n" \
+        "(press Enter to leave blank): ")
+        statues_input = input("Is the item claimed or unclaimed (yes/no): ")
+        item = Item(name, contact, item_type, item_description, statues_input == "yes")
+        
+        # add the item to the system
+        # and save to the json file
+        self.items.append(item)
+        self.save_items(self.filename)
+
+        # count the number of items
+        self.count += 1
+
+    def save_items(self, filename=None):
+        #Justin
+        # save current items to json file
+        if not filename:
+            filename = self.filename
+        with open(filename, "w") as f:
+            json.dump([item.__dict__ for item in self.items], f)
+        # add a success message
+        print(f"Items saved to {filename} successfully.")
+
+    def search_items(self, keyword):
+        #ZHU
+        pass
+   
+    def delete_item(self, item_name):
+        #ZHU
+        pass
+    
+    def list_items(self):
+        #ZHU
+        pass
+    def claim_item(self, item_name, owner_contact):
+        #Charlotte
+        pass
+    def update_item(self,item_id, **kwargs): 
+        # (by XIE) allow updating item information based on item_id
+        for item in self.items:
+            if item.item_id == item_id:
+                for key, value in kwargs.items():
+                    if hasattr(item, key):
+                        setattr(item, key, value)
+                self.save_items(self.filename)  #change save_items(...) if parameters are changed
+                print(f"Item {item_id} updated successfully.")
+                return True
+        print(f"Item {item_id} not found.")
+        return False
+
+    def login(self):
+        #Charlotte
+        pass
+
+    def main_menu(self):
+        while True:
+            print("\n===== Lost and Found System =====")
+            print("1. I Found Something! (finder)")
+            print("2. I'm an Administrator! (admin)")
+            print("0. Exit System")
+            choice=input("Please select an option (0-2): ")  # Main menu selection
+            if choice == '1':
+                self.finder_menu()
+            elif choice == '2':
+                self.admin_menu()
+            elif choice == '0':
+                print("Thank you for using the Lost and Found System! Goodbye!")
+                break
+            else:
+                print("Invalid choice, please try again!")    
+
+    def owner_menu(self, owner_contact):
+        while True:
+            print("\n===== Owner Menu =====")
+            print("1. Search Claimable Items (by keyword)")
+            print("2. View All Claimable Items")
+            print("0. Return to Main Menu")
+            
+            choice = input("Please select an option [0-3]: ")
+            
+            if choice == '1':
+                keyword = input("Enter search keyword (item name/description): ")
+                results = self.search_items(keyword)
+                if results:
+                    for item in results:
+                        print(f"ID: {item.item_id} | Name: {item.name} | Description: {item.description} | Location: {item.destination}")
+                else:
+                    print("No matching items found.")
+            
+            elif choice == '2':
+                self.list_items()
+            elif choice == '0':
+                break
+            
+            else:
+                print("Invalid input, please try again.")
+                
+    def finder_menu(self):
+        while True:
+            print("\n===== Finder Menu =====")
+            print("1. Search Claimable Items (by keyword)")
+            print("2. View All Claimable Items")
+            print("3. Submit Found Item")
+            print("0. Return to Main Menu")
+            choice=input("Please select an option (0-3): ")  # User function selection
+            if choice == '1':  # Search
+                keyword=input("Enter item keyword: ")
+                results=self.search_item(keyword)
+                if results:
+                    for item in results:
+                        print(f"Item Name: {item.name}, Description: {item.description}, Found Location: {item.destination}")
+                else:
+                        print("No matching items found.")
+            elif choice == '2':  # View
+                self.list_items()
+            elif choice == '3':  # Submit
+                name=input("Enter found item name: ")
+                description=input("Enter item description: ")
+                destination=input("Enter found location: ")
+                new_item=Item(name=name,description=description,destination=destination)
+                self.add_item(new_item)
+                print("Found item submitted successfully!")
+            elif choice == '0':
+                break
+                print("Back to main menu")
+            else:
+                print("Invalid choice, please try again!")
+    
+    def admin_menu(self):
+        while True:
+            print("\n===== Administrator Menu =====")
+            print("1. Delete Item")
+            print("2. View Items (Claimed/Unclaimed)")
+            print("0. Return to Main Menu")
+            choice=input("Please select an option [0-3]: ")  # Admin input
+            if choice == '1':  # Delete item
+                item_id=input("Enter item ID to delete: ")
+                # Note: item_id is necessary, can be assigned using index
+                if self.delete_item(item_id):
+                    print("Item deleted successfully.")
+                else:
+                    print("Item not found.")
+            elif choice == '2':
+                # Note: For better display, originally planned to show claimed/unclaimed counts separately,
+                # but simplified to list all items since there's no item_status in the previous implementation
+                self.list_items()
+            elif choice == '0':
+                break
+                print("Returning to main menu")
+            else:
+                print("Invalid choice, please try again!")
+
+if __name__ == "__main__":
+    system = System()
+    system.main_menu()
+
+
+"""
+# Test cases for update_item method
+if __name__ == "__main__":
+    system = System()
+
+    item = Item("phone", "a123456", "Electronics", "Silver iphone")
+    system.add_item(item)
+    print(item)
+    system.update_item(item.item_id, item_type="Apple iphone", item_description="white iphone")
+    print(item)
+    result = system.update_item(2, item_description="test")
+    print("Return:", result)
+"""
