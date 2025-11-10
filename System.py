@@ -56,9 +56,9 @@ class System:
     def search_item(self,keyword):
         '''searching items's relevant imformation'''
         results=[item for item in self.items
-                if keyword.lower() = item.name.lower()
-                or keyword.lower ()= item.destination.lower()
-                or keyword.lower ()= item.description.lower()]
+                if keyword.lower() == item.name.lower()
+                or keyword.lower () == item.destination.lower()
+                or keyword.lower () == item.description.lower()]
         print("find relative information :",len(results))        
         enumerate(results)
         list(enumerate(results))
@@ -231,3 +231,4 @@ if __name__ == "__main__":
     result = system.update_item(2, item_description="test")
     print("Return:", result)
 """
+
