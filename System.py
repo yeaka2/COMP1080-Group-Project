@@ -53,17 +53,48 @@ class System:
         # add a success message
         print(f"Items saved to {filename} successfully.")
 
-    def search_items(self, keyword):
-        #ZHU
-        pass
-   
-    def delete_item(self, item_name):
-        #ZHU
-        pass
-    
+    def search_item(self,keyword):
+        '''searching items's relevant imformation'''
+        results=[item for item in self.items
+                if keyword.lower() = item.name.lower()
+                or keyword.lower ()= item.destination.lower()
+                or keyword.lower ()= item.description.lower()]
+        print("find relative information :",len(results))        
+        enumerate(results)
+        list(enumerate(results))
+        [*enumerate(results,start=1)]
+        if results:
+            for i , item in enumerate(results):
+                print(i,item)
+        else:
+            print(" unmatched item")
+        return results
+
+    def delete_item(self,item_name):
+        '''delete finding items '''
+        original_items_len=len(self.items)
+        self.items=[item for item in self.items 
+                    if item.name !=item_name]
+        for  j , item in enumerate(self.items,1):
+            if item.name==item_name:
+                del self.items[j]
+                print('The item has been deleted')
+                return
+        if len(self.items) < original_items_len:
+            self.save_items()
+            print('The item has been saved')
+        else:
+            print("The item has not been found")
+
     def list_items(self):
-        #ZHU
-        pass
+        '''list all unclaimed items'''
+        for i , item in enumerate(self.items,1):
+            if not item.is_claimed:
+                print(f"{i},the name is {item.name}")
+                print(f" the destination is{item.destination} ")
+                print(f" the description is{item.description} ")
+
+
     def claim_item(self, item_name, owner_contact):
         #Charlotte
         pass
