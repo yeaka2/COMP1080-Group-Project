@@ -5,12 +5,13 @@ class Item:
     
 
     
-    def __init__(self, name, contact, item_type, item_description="", status=False,item_id=None): 
+    def __init__(self, name, contact, item_type, item_description="",location='',status=False,item_id=None): 
     #initializes an Item object with provided attributes
         self.name = name
         self.contact = contact #owner's contact information, phone, email, etc.
         self.item_type = item_type #e.g., electronics, clothing, etc.
         self.item_description = item_description
+        self.location = location #location where the item was found
         self.status = status #False means unclaimed, True means claimed
         self.item_id = item_id #unique identifier for the item
         
@@ -29,6 +30,7 @@ class Item:
         f"Contact:{self.contact}, "
         f"Type:{self.item_type}, "
         f"Description:{self.item_description}, "
+        f"Location:{self.location},"
         f"Status:{status_str}"
         f")"
         )
@@ -41,6 +43,7 @@ class Item:
             "contact": self.contact,
             "item_type": self.item_type,
             "item_description": self.item_description,
+            "location": self.location,
             "status": self.status
         }
 
@@ -53,6 +56,7 @@ class Item:
             contact=data.get("contact"),
             item_type=data.get("item_type"),
             item_description=data.get("item_description"),
+            location=data.get("location"),
             status=data.get("status", False)
         )
 
@@ -60,7 +64,7 @@ class Item:
 '''
 # Test cases for Item class
 if __name__ == "__main__":
-    item1 = Item("iphone", "a123456", "Electronics", "black iPhone") # Create an item instance
+    item1 = Item("iphone", "a123456", "Electronics", "black iPhone","IOH") # Create an item instance
     print(item1)  #test __str__
 
     # to dict and from dict test
