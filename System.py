@@ -45,6 +45,7 @@ class System:
 
     def save_items(self, filename=None):
         #Justin
+
         # save current items to json file
         if not filename:
             filename = self.filename
@@ -54,6 +55,8 @@ class System:
         print(f"Items saved to {filename} successfully.")
 
     def search_item(self,keyword):
+        #ZHU
+
         '''searching items's relevant imformation'''
         results=[item for item in self.items
                 if keyword.lower() == item.name.lower()
@@ -71,6 +74,8 @@ class System:
         return results
 
     def delete_item(self,item_name):
+        #ZHU
+
         '''delete finding items '''
         original_items_len=len(self.items)
         self.items=[item for item in self.items 
@@ -87,6 +92,8 @@ class System:
             print("The item has not been found")
 
     def list_items(self):
+        #ZHU
+
         '''list all unclaimed items'''
         for i , item in enumerate(self.items,1):
             if not item.is_claimed:
@@ -94,12 +101,29 @@ class System:
                 print(f" the destination is{item.destination} ")
                 print(f" the description is{item.description} ")
 
-
     def claim_item(self, item_name, owner_contact):
         #Charlotte
-        pass
+
+        """Claim your lost item (operation by the owner)"""
+        for item in self.items:
+            if item.item_name == item_name:
+                # If the item has already been claimed
+                if hasattr(item, "claimed") and item.claimed:
+                    print(" The item has been claimed.")
+                    return False
+                # Modify item status
+                item.claimed = True
+                item.owner_contact = owner_contact
+                self.save_items(self.filename)
+                print(f" Item '{item_name}' has been claimed by {owner_contact}.")
+                return True
+        print(f" No item named '{item_name}' was found.")
+        return False
+
     def update_item(self,item_id, **kwargs): 
-        # (by XIE) allow updating item information based on item_id
+        #XIE
+
+        # allow updating item information based on item_id
         for item in self.items:
             if item.item_id == item_id:
                 for key, value in kwargs.items():
@@ -113,12 +137,27 @@ class System:
 
     def login(self):
         #Charlotte
-        pass
+
+        """Login portal"""
+        print("===== Login interface =====")
+        username = input("Please enter your username： admin / owner / finder：").strip()
+        if username == "admin":
+            self.admin_menu()
+        elif username == "owner":
+            contact = input("Please fill in your contact information (mobile phone number or email address):")
+            self.owner_menu(contact)
+        elif username == "finder":
+            self.finder_menu()
+        else:
+            print("Invalid username, please re-enter.")
 
     def main_menu(self):
+        #LUO 
+        # ---Charlotte also did one---
+
         while True:
             print("\n===== Lost and Found System =====")
-            print("1. I Found Something! (finder)")
+            print("1. I Found / Lost Something! (finder&owner)")
             print("2. I'm an Administrator! (admin)")
             print("0. Exit System")
             choice=input("Please select an option (0-2): ")  # Main menu selection
@@ -133,6 +172,9 @@ class System:
                 print("Invalid choice, please try again!")    
 
     def owner_menu(self, owner_contact):
+        #Charlotte
+        # ---LUO also did one---
+
         while True:
             print("\n===== Owner Menu =====")
             print("1. Search Claimable Items (by keyword)")
@@ -157,8 +199,10 @@ class System:
             
             else:
                 print("Invalid input, please try again.")
-                
+
     def finder_menu(self):
+        #LUO
+
         while True:
             print("\n===== Finder Menu =====")
             print("1. Search Claimable Items (by keyword)")
@@ -190,6 +234,8 @@ class System:
                 print("Invalid choice, please try again!")
     
     def admin_menu(self):
+        #LUO
+
         while True:
             print("\n===== Administrator Menu =====")
             print("1. Delete Item")
@@ -231,4 +277,11 @@ if __name__ == "__main__":
     result = system.update_item(2, item_description="test")
     print("Return:", result)
 """
-
+"""
+Contributer denote:
+XIE: XIE Zhiyuan
+Justin: LIAO Junming
+ZHU: ZHU Jinze
+Charlotte: LUO wenqi
+LUO: LUO Zhenyu
+"""
