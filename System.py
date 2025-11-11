@@ -60,8 +60,8 @@ class System:
         '''searching items's relevant imformation'''
         results=[item for item in self.items
                 if keyword.lower() == item.name.lower()
-                or keyword.lower () == item.destination.lower()
-                or keyword.lower () == item.description.lower()]
+                or keyword.lower () == item.location.lower()
+                or keyword.lower () == item.location.lower()]
         print("find relative information :",len(results))        
         enumerate(results)
         list(enumerate(results))
@@ -98,8 +98,8 @@ class System:
         for i , item in enumerate(self.items,1):
             if not item.is_claimed:
                 print(f"{i},the name is {item.name}")
-                print(f" the destination is{item.destination} ")
-                print(f" the description is{item.description} ")
+                print(f" the location is{item.location} ")
+                print(f" the location is{item.location} ")
 
     def claim_item(self, item_name, owner_contact):
         #Charlotte
@@ -188,7 +188,7 @@ class System:
                 results = self.search_items(keyword)
                 if results:
                     for item in results:
-                        print(f"ID: {item.item_id} | Name: {item.name} | Description: {item.description} | Location: {item.destination}")
+                        print(f"ID: {item.item_id} | Name: {item.name} | Description: {item.description} | Location: {item.location}")
                 else:
                     print("No matching items found.")
             
@@ -223,7 +223,7 @@ class System:
             elif choice == '3':  # Submit
                 name=input("Enter found item name: ")
                 description=input("Enter item description: ")
-                destination=input("Enter found location: ")
+                location=input("Enter found location: ")
                 new_item=Item(name=name,description=description,destination=destination)
                 self.add_item(new_item)
                 print("Found item submitted successfully!")
@@ -285,3 +285,4 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
