@@ -70,7 +70,7 @@ class System:
             for i , item in enumerate(results):
                 print(i,item)
         else:
-            print("unmatched item")
+            print(" unmatched item")
         return results
 
     def delete_item(self,item_name):
@@ -119,6 +119,12 @@ class System:
                 return True
         print(f" No item named '{item_name}' was found.")
         return False
+    
+    def get_new_item_id(self):
+        # (by XIE) generate a new item_id for a new item
+        self.max_id+=1
+        self.save_items(self.filename)  #change save_items(...) if parameters are changed
+        return self.max_id   
 
     def update_item(self,item_id, **kwargs): 
         #XIE
@@ -157,16 +163,13 @@ class System:
 
         while True:
             print("\n===== Lost and Found System =====")
-            print("1. I Found (Finder)")
-            print("2. I'm an Owner! (owner)")
-            print("3. I'm an Administrator! (admin)")
+            print("1. I Found / Lost Something! (finder&owner)")
+            print("2. I'm an Administrator! (admin)")
             print("0. Exit System")
-            choice=input("\nPlease select an option (0-3): ")  # Main menu selection
+            choice=input("Please select an option (0-2): ")  # Main menu selection
             if choice == '1':
                 self.finder_menu()
             elif choice == '2':
-                self.owner_menu()
-            elif choice == '3':
                 self.admin_menu()
             elif choice == '0':
                 print("Thank you for using the Lost and Found System! Goodbye!")
@@ -174,7 +177,7 @@ class System:
             else:
                 print("Invalid choice, please try again!")    
 
-    def owner_menu(self):
+    def owner_menu(self, owner_contact):
         #Charlotte
         # ---LUO also did one---
 
@@ -185,15 +188,13 @@ class System:
             print("0. Return to Main Menu")
             
             choice = input("Please select an option [0-3]: ")
-            print() # New line for better readability
             
             if choice == '1':
                 keyword = input("Enter search keyword (item name/description): ")
-                results = self.search_item(keyword)
+                results = self.search_items(keyword)
                 if results:
                     for item in results:
-                        print(f"ID: {item.item_id} | Name: {item.name}")
-                        print(f"Description: {item.description} | Location: {item.location}")
+                        print(f"ID: {item.item_id} | Name: {item.name} | Description: {item.description} | Location: {item.location}")
                 else:
                     print("No matching items found.")
             
