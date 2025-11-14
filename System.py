@@ -12,6 +12,7 @@ class System:
     def __init__(self,filename="items.json"):
         #Justin
         self.filename = filename # JSON file to store items
+        self.max_id = 0
         self.load_items(self.filename) # load existing items from file
         self.count = 0 # count the number of items
     
@@ -23,12 +24,16 @@ class System:
         try:
             with open(filename, "r") as f:
                 items_data = json.load(f)
+                self.max_id = items_data["max_id"] #load max_id
+                items_data = items_data["items"]   #load items list
                 self.items = [Item.from_dict(item) for item in items_data]
 
         # if file not found, start with empty list
         except FileNotFoundError:
+            self.max_id = 0
             self.items = []
         except json.JSONDecodeError:
+            self.max_id = 0
             self.items = []
 
     # save items to file
@@ -43,8 +48,8 @@ class System:
         # prompt the user to enter item details
         # applicable for both cases
         name = input("Enter item name: ")
-        item_type = input("Enter item type (e.g., electronics, clothing): ")
-        item_description = input("Enter item description " \
+        category = input("Enter item type (e.g., electronics, clothing): ")
+        description = input("Enter item description " \
         "(press Enter to leave blank): ")
         statues_input = False # default to unclaimed or unfound(for lost items)
 
@@ -61,11 +66,12 @@ class System:
 
         item = Item(name = name, 
                     contact = contact, 
-                    item_type = item_type,
-                    item_description = item_description, 
+                    category = category,
+                    description = description, 
                     location = location,
                     lost_or_found = Bool_LOF,
-                    status = statues_input)
+                    status = statues_input,
+                    item_id = self.get_new_item_id())
         
         # add the item to the system
         # and save to the json file
@@ -85,11 +91,22 @@ class System:
         # save current items to json file
         if not filename:
             filename = self.filename
+        data={
+            "max_id": self.max_id, # save max_id
+            "items": [item.to_dict() for item in self.items] #save items by converting to dict
+        }
         with open(filename, "w") as f:
-            json.dump([item.__dict__ for item in self.items], f)
+            json.dump(data, f, indent=4) # pretty print json
         # add a success message
         print(f"Items saved to {filename} successfully.")
 
+
+    def id_item(self, item_id):
+        #ZHU
+        for item in self.items:
+            if item.item_id == item_id:
+                return item
+        return None
     # search items by keyword
     def search_item(self,keyword):
         #ZHU
@@ -98,7 +115,7 @@ class System:
         results=[item for item in self.items
                 if keyword.lower() == item.name.lower()
                 or keyword.lower () == item.location.lower()
-                or keyword.lower () == item.item_description.lower()]
+                or keyword.lower () == item.description.lower()]
         print("find relative information :",len(results))        
         enumerate(results)
         list(enumerate(results))
@@ -128,6 +145,7 @@ class System:
             print('The item has been saved')
         else:
             print("The item has not been found")
+            
 
     # list all unclaimed items
     def list_items(self):
@@ -168,7 +186,6 @@ class System:
     def get_new_item_id(self):
         # (by XIE) generate a new item_id for a new item
         self.max_id+=1
-        self.save_items(self.filename)  #change save_items(...) if parameters are changed
         return self.max_id
     
     def update_item(self,item_id, **kwargs): 
@@ -180,7 +197,7 @@ class System:
                 for key, value in kwargs.items():
                     if hasattr(item, key):
                         setattr(item, key, value)
-                self.save_items(self.filename)  #change save_items(...) if parameters are changed
+                self.save_items() 
                 print(f"Item {item_id} updated successfully.")
                 return True
         print(f"Item {item_id} not found.")
@@ -249,7 +266,7 @@ class System:
                 if results:
                     for item in results:
                         print(f"ID: {item.item_id} | Name: {item.name}")
-                        print(f"Description: {item.item_description} | Location: {item.location}")
+                        print(f"Description: {item.description} | Location: {item.location}")
                 else:
                     print("No matching items found.")
                 hold_on() # stop to view
@@ -288,7 +305,7 @@ class System:
                 results=self.search_item(keyword)
                 if results:
                     for item in results:
-                        print(f"Item Name: {item.name}, Description: {item.item_description}, "
+                        print(f"Item Name: {item.name}, Description: {item.description}, "
                               f"Found Location: {item.location}")
                 else:
                         print("No matching items found.")
@@ -344,9 +361,9 @@ if __name__ == "__main__":
     item = Item("phone", "a123456", "Electronics", "Silver iphone")
     system.add_item(item)
     print(item)
-    system.update_item(item.item_id, item_type="Apple iphone", item_description="white iphone")
+    system.update_item(item.item_id, category="Apple iphone", description="white iphone")
     print(item)
-    result = system.update_item(2, item_description="test")
+    result = system.update_item(2, description="test")
     print("Return:", result)
 """
 """
@@ -357,5 +374,3 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
-
-

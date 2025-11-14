@@ -5,13 +5,13 @@ class Item:
     
 
     
-    def __init__(self, name, contact, item_type, item_description="",
+    def __init__(self, name, contact, category, description="",
                  location='',status=None,lost_or_found=None,item_id=None): 
     #initializes an Item object with provided attributes
         self.name = name
         self.contact = contact #owner's contact information, phone, email, etc.
-        self.item_type = item_type #e.g., electronics, clothing, etc.
-        self.item_description = item_description
+        self.category = category #e.g., electronics, clothing, etc.
+        self.description = description
         self.location = location #location where the item was found
         self.status = status #False means unclaimed or unfound(for lost items), True means claimed
         self.lost_or_found = lost_or_found #False=lost;True=found
@@ -23,7 +23,7 @@ class Item:
 
         '''String representation of the Item object
         example output:
-        Item(ID:1, Name:Phone, Contact:a123456, Type:Electronics, Description:Black iPhone, Status:Unclaimed)'''
+        Item(ID:1, Name:Phone, Contact:a123456, category:Electronics, Description:Black iPhone, Status:Unclaimed)'''
 
         if self.status == False and self.lost_or_found == False:
             status_str = "Unfound"
@@ -33,13 +33,15 @@ class Item:
             status_str = "Unfound"
         elif self.status == True and self.lost_or_found == True:
             status_str = "Claimed"
+        else:
+            status_str = "Unknown"
 
         return (f" "
         f"ID:{self.item_id}\n "
         f"Name:{self.name}\n "
         f"Contact:{self.contact}\n "
-        f"Type:{self.item_type}\n "
-        f"Description:{self.item_description}\n "
+        f"Category:{self.category}\n "
+        f"Description:{self.description}\n "
         f"Location:{self.location}\n "
         f"Status:{status_str}"
         )
@@ -50,10 +52,11 @@ class Item:
             "item_id": self.item_id,
             "name": self.name,
             "contact": self.contact,
-            "item_type": self.item_type,
-            "item_description": self.item_description,
-            "location": self.location,
-            "status": self.status
+            "Category": self.category,
+            "Description": self.description,
+            "Location": self.location,
+            "Status": self.status,
+            "Lost_or_found": self.lost_or_found
         }
 
     @staticmethod
@@ -63,11 +66,11 @@ class Item:
             item_id=data.get("item_id"),
             name=data.get("name"),
             contact=data.get("contact"),
-            item_type=data.get("item_type"),
-            item_description=data.get("item_description"),
-            location=data.get("location"),
-            status=data.get("status", False),
-            lost_or_found=data.get("lost_or_found")
+            category=data.get("Category"),
+            description=data.get("Description"),
+            location=data.get("Location"),
+            status=data.get("Status", False),
+            lost_or_found=data.get("Lost_or_found")
         )
 
 
