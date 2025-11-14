@@ -96,7 +96,7 @@ class System:
 
         '''list all unclaimed items'''
         for i , item in enumerate(self.items,1):
-            if not item.is_claimed:
+            if not item.statues_input:
                 print(f"{i},the name is {item.name}")
                 print(f" the location is{item.location} ")
                 print(f" the location is{item.location} ")
@@ -292,4 +292,5 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
 
