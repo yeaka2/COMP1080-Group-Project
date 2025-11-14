@@ -1,5 +1,7 @@
 import json
-from models import Item
+import hashlib
+
+from models import Item, User
 
 # to stop for viewing
 def hold_on():
@@ -35,6 +37,9 @@ class System:
         except json.JSONDecodeError:
             self.max_id = 0
             self.items = []
+
+    def load_users(self, filename="users.json"):
+        pass
 
     # save items to file
     def add_item(self,lost_or_found):
@@ -99,7 +104,9 @@ class System:
             json.dump(data, f, indent=4) # pretty print json
         # add a success message
         print(f"Items saved to {filename} successfully.")
-
+    
+    def save_users(self, filename="users.json"):
+        pass
 
     def id_item(self, item_id):
         #ZHU
@@ -203,7 +210,75 @@ class System:
         print(f"Item {item_id} not found.")
         return False
 
-    # login portal
+    def hash_password(self, password):
+        # (by XIE) hash the password using SHA-256
+        return hashlib.sha256(password.encode()).hexdigest()
+    
+    def register(self):
+        # (by XIE) register a new user
+        print("===== Register interface =====")
+
+        while True: #username input loop
+            username = input("Please enter your username (at least 6 characters, q to quit): ").strip()
+            if username.lower() == 'q':
+                print("Registration cancelled.")
+                return
+            if not username:
+                print("Username cannot be empty.")
+                continue
+            if len(username) < 6:
+                print("Username must be at least 6 characters long.")
+                continue
+            if any(u.username == username for u in self.users):
+                print("Username already exists. Please try another one.")
+                continue
+            break
+
+        while True: #password input loop
+            password = input("Please enter your password (at least 6 characters, q to quit): ").strip()
+            if password.lower() == 'q':
+                print("Registration cancelled.")
+                return
+            if not password:
+                print("Password cannot be empty.")
+                continue
+            if len(password) < 6:
+                print("Password must be at least 6 characters long.")
+                continue
+            break
+        password = self.hash_password(password) # hash the password before storing
+
+        while True: #role input loop
+            role = input("Please enter your role (admin/owner/finder, q to quit): ").strip().lower()
+            if role == 'q':
+                print("Registration cancelled.")
+                return
+            if role not in ['admin', 'owner', 'finder']:
+                print("Invalid role. Please enter 'admin', 'owner', or 'finder'.")
+                continue
+            if role == 'admin':
+                admin_code = input("Please enter the admin registration code: ").strip()
+                if admin_code != "COMP1080": # example admin code
+                    print("Invalid admin registration code.")
+                    continue
+            break
+        contact = input("Please enter your contact information (q to quit): ").strip()
+        if contact.lower() == 'q':
+            print("Registration cancelled.")
+            return
+        email = input("Please enter your email address (q to quit): ").strip()
+        if email.lower() == 'q':
+            print("Registration cancelled.")
+            return
+        
+        new_user = User(username, password, role, contact, email)
+        self.users.append(new_user)
+        self.save_users()
+        print("User registered successfully!")
+        print(new_user)
+        
+
+
     def login(self):
         #Charlotte
 
