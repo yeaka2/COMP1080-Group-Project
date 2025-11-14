@@ -1,4 +1,5 @@
 import json
+from random import randint as rd
 from Item import Item
 
 # to stop for viewing
@@ -13,7 +14,6 @@ class System:
         #Justin
         self.filename = filename # JSON file to store items
         self.load_items(self.filename) # load existing items from file
-        self.count = 0 # count the number of items
     
     # load items from file
     def load_items(self, filename="items.json"):
@@ -31,8 +31,38 @@ class System:
         except json.JSONDecodeError:
             self.items = []
 
+    # check if ID exists
+    def ID_exist(self,ID):
+        #Justin
+
+        for i in self.items:
+            if i.item_id == ID:
+                return True
+        return False
+
+    # generate the encrypted ID for each item
+    def __ID_generator__(self, sep_digit=rd(5,9)):
+        #Justin
+        
+        count = len(self.items) + 1
+        while True:
+            # one special digit + the ?-th item (maybe 1, 2 digits or more) + one check digit
+            ori_id = str(sep_digit) + str(count)
+            password = "607249"
+            sum = 0
+            for i in range(len(ori_id)):
+                sum += int(ori_id[i]) * int((password[i%len(password)]))
+            check_digit = sum % 10
+            ori_id = ori_id + str(check_digit)
+            gen_id = int(ori_id)
+            if self.ID_exist(gen_id) == False:
+                break
+            else:
+                count += 1
+        return gen_id
+
     # save items to file
-    def add_item(self,lost_or_found):
+    def add_item(self,lost_or_found,id_pro=rd(5,9)): # id_pro:property
         #Justin
 
         if lost_or_found == 'lost':
@@ -47,6 +77,7 @@ class System:
         item_description = input("Enter item description " \
         "(press Enter to leave blank): ")
         statues_input = False # default to unclaimed or unfound(for lost items)
+        ID = self.__ID_generator__(sep_digit=id_pro)
 
         # applicable for found case
         if lost_or_found == 'found':
@@ -65,15 +96,13 @@ class System:
                     item_description = item_description, 
                     location = location,
                     lost_or_found = Bool_LOF,
-                    status = statues_input)
+                    status = statues_input,
+                    item_id = ID)
         
         # add the item to the system
         # and save to the json file
         self.items.append(item)
         self.save_items(self.filename)
-
-        # count the number of items
-        self.count += 1
 
         # load items from js file
         self.load_items(self.filename)
@@ -121,6 +150,7 @@ class System:
         for  j , item in enumerate(self.items,1):
             if item.name==item_name:
                 del self.items[j]
+                count -= 1
                 print('The item has been deleted')
                 return
         if len(self.items) < original_items_len:
@@ -164,13 +194,8 @@ class System:
                 return True
         print(f" No item named '{item_name}' was found.")
         return False
-    
-    def get_new_item_id(self):
-        # (by XIE) generate a new item_id for a new item
-        self.max_id+=1
-        self.save_items(self.filename)  #change save_items(...) if parameters are changed
-        return self.max_id
-    
+
+    # update item information
     def update_item(self,item_id, **kwargs): 
         #XIE
 
@@ -270,7 +295,8 @@ class System:
         #Justin
 
         print("Please declare your lost item details:")
-        self.add_item(lost_or_found='lost')
+        self.add_item(lost_or_found='lost', id_pro=1) # id_pro=1 for lost items
+        print("Lost item declared successfully!")
 
     # finder menu
     def finder_menu(self):
@@ -296,7 +322,7 @@ class System:
             elif choice == '2':  # View
                 self.list_items()
             elif choice == '3':  # Submit
-                self.add_item(lost_or_found='found')
+                self.add_item(lost_or_found='found',id_pro=2) # id_pro=2 for found items
                 print("Found item submitted successfully!")
             elif choice == '0':
                 break
@@ -357,5 +383,3 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
-
-
