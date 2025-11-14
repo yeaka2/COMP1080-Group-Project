@@ -23,7 +23,7 @@ class System:
         except json.JSONDecodeError:
             self.items = []
 
-    def add_item(self, item):
+    def add_item(self):
         #Justin
 
         # prompt the user to enter item details
@@ -232,11 +232,7 @@ class System:
             elif choice == '2':  # View
                 self.list_items()
             elif choice == '3':  # Submit
-                name=input("Enter found item name: ")
-                description=input("Enter item description: ")
-                location=input("Enter found location: ")
-                new_item=Item(name=name,description=description,location=location)
-                self.add_item(new_item)
+                self.add_item()
                 print("Found item submitted successfully!")
             elif choice == '0':
                 break
@@ -296,3 +292,4 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
