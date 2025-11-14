@@ -5,34 +5,43 @@ class Item:
     
 
     
-    def __init__(self, name, contact, item_type, item_description="",location='',status=False,item_id=None): 
+    def __init__(self, name, contact, item_type, item_description="",
+                 location='',status=None,lost_or_found=None,item_id=None): 
     #initializes an Item object with provided attributes
         self.name = name
         self.contact = contact #owner's contact information, phone, email, etc.
         self.item_type = item_type #e.g., electronics, clothing, etc.
         self.item_description = item_description
         self.location = location #location where the item was found
-        self.status = status #False means unclaimed, True means claimed
+        self.status = status #False means unclaimed or unfound(for lost items), True means claimed
+        self.lost_or_found = lost_or_found #False=lost;True=found
         self.item_id = item_id #unique identifier for the item
-        
 
-  
+
     def __str__(self):
+        # this function is to print the details of an item object
 
         '''String representation of the Item object
         example output:
         Item(ID:1, Name:Phone, Contact:a123456, Type:Electronics, Description:Black iPhone, Status:Unclaimed)'''
 
-        status_str = "Claimed" if self.status else "Unclaimed"
-        return (f"Item("
-        f"ID:{self.item_id}, "
-        f"Name:{self.name}, "
-        f"Contact:{self.contact}, "
-        f"Type:{self.item_type}, "
-        f"Description:{self.item_description}, "
-        f"Location:{self.location},"
+        if self.status == False and self.lost_or_found == False:
+            status_str = "Unfound"
+        elif self.status == False and self.lost_or_found == True:
+            status_str = "Unclaimed"
+        elif self.status == True and self.lost_or_found == False:
+            status_str = "Unfound"
+        elif self.status == True and self.lost_or_found == True:
+            status_str = "Claimed"
+
+        return (f" "
+        f"ID:{self.item_id}\n "
+        f"Name:{self.name}\n "
+        f"Contact:{self.contact}\n "
+        f"Type:{self.item_type}\n "
+        f"Description:{self.item_description}\n "
+        f"Location:{self.location}\n "
         f"Status:{status_str}"
-        f")"
         )
 
     def to_dict(self):
@@ -57,7 +66,8 @@ class Item:
             item_type=data.get("item_type"),
             item_description=data.get("item_description"),
             location=data.get("location"),
-            status=data.get("status", False)
+            status=data.get("status", False),
+            lost_or_found=data.get("lost_or_found")
         )
 
 
