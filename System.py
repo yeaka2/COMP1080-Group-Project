@@ -164,8 +164,13 @@ class System:
                 return True
         print(f" No item named '{item_name}' was found.")
         return False
-
-    # update item information
+    
+    def get_new_item_id(self):
+        # (by XIE) generate a new item_id for a new item
+        self.max_id+=1
+        self.save_items(self.filename)  #change save_items(...) if parameters are changed
+        return self.max_id
+    
     def update_item(self,item_id, **kwargs): 
         #XIE
 
@@ -352,3 +357,5 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
+
