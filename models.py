@@ -91,4 +91,5 @@ if __name__ == "__main__":
     print("Claimed:", item1)
     item1.status = False
     print("Claimed:", item1)
+
 '''
