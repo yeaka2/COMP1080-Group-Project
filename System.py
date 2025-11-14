@@ -1,6 +1,10 @@
 import json
 from Item import Item
 
+def hold_on():
+    print("---Press ENTER to continue---")
+    input()
+
 class System:
     def __init__(self,filename="items.json"):
         #Justin
@@ -23,7 +27,7 @@ class System:
         except json.JSONDecodeError:
             self.items = []
 
-    def add_item(self, item):
+    def add_item(self):
         #Justin
 
         # prompt the user to enter item details
@@ -32,8 +36,18 @@ class System:
         item_type = input("Enter item type (e.g., electronics, clothing): ")
         item_description = input("Enter item description: \n" \
         "(press Enter to leave blank): ")
+        location = input("Enter location where the item was found: ")
         statues_input = input("Is the item claimed or unclaimed (yes/no): ")
-        item = Item(name, contact, item_type, item_description, statues_input == "yes")
+
+        # item_id = TODO
+        # maybe we should also deine [item_id] here?
+
+        item = Item(name = name, 
+                    contact = contact, 
+                    item_type = item_type,
+                    item_description = item_description, 
+                    location = location,
+                    status = (statues_input == "yes"))
         
         # add the item to the system
         # and save to the json file
@@ -96,10 +110,10 @@ class System:
 
         '''list all unclaimed items'''
         for i , item in enumerate(self.items,1):
-            if not item.is_claimed:
-                print(f"{i},the name is {item.name}")
-                print(f" the location is{item.location} ")
-                print(f" the location is{item.location} ")
+            if not item.status:
+                print(f"NO.{i} Item is:")
+                print(item)
+        hold_on() # stop to view
 
     def claim_item(self, item_name, owner_contact):
         #Charlotte
@@ -162,6 +176,7 @@ class System:
             print("3. I'm an Administrator! (admin)")
             print("0. Exit System")
             choice=input("\nPlease select an option (0-3): ")  # Main menu selection
+            print() # New line for better readability
             if choice == '1':
                 self.finder_menu()
             elif choice == '2':
@@ -226,11 +241,7 @@ class System:
             elif choice == '2':  # View
                 self.list_items()
             elif choice == '3':  # Submit
-                name=input("Enter found item name: ")
-                description=input("Enter item description: ")
-                location=input("Enter found location: ")
-                new_item=Item(name=name,description=description,location=location)
-                self.add_item(new_item)
+                self.add_item()
                 print("Found item submitted successfully!")
             elif choice == '0':
                 break
