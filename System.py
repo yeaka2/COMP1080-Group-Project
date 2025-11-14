@@ -1,18 +1,22 @@
 import json
 from Item import Item
 
+# to stop for viewing
 def hold_on():
     print("---Press ENTER to continue---")
     input()
 
 class System:
+
+    # constructor
     def __init__(self,filename="items.json"):
         #Justin
         self.filename = filename # JSON file to store items
         self.load_items(self.filename) # load existing items from file
         self.count = 0 # count the number of items
     
-    def load_items(self, filename=None):
+    # load items from file
+    def load_items(self, filename="items.json"):
         #Justin
         if not filename:
             filename = self.filename
@@ -27,17 +31,30 @@ class System:
         except json.JSONDecodeError:
             self.items = []
 
-    def add_item(self):
+    # save items to file
+    def add_item(self,lost_or_found):
         #Justin
 
+        if lost_or_found == 'lost':
+            Bool_LOF = False
+        elif lost_or_found == 'found':
+            Bool_LOF = True
+
         # prompt the user to enter item details
+        # applicable for both cases
         name = input("Enter item name: ")
-        contact = input("Enter owner contact information: ")
         item_type = input("Enter item type (e.g., electronics, clothing): ")
-        item_description = input("Enter item description: \n" \
+        item_description = input("Enter item description " \
         "(press Enter to leave blank): ")
-        location = input("Enter location where the item was found: ")
-        statues_input = input("Is the item claimed or unclaimed (yes/no): ")
+        statues_input = False # default to unclaimed or unfound(for lost items)
+
+        # applicable for found case
+        if lost_or_found == 'found':
+            contact = input("Enter your contact information: ")
+            location = input("Enter location where the item was found: ")
+        else:
+            contact = "Not applicable"
+            location = "Not applicable"
 
         # item_id = TODO
         # maybe we should also deine [item_id] here?
@@ -47,7 +64,8 @@ class System:
                     item_type = item_type,
                     item_description = item_description, 
                     location = location,
-                    status = (statues_input == "yes"))
+                    lost_or_found = Bool_LOF,
+                    status = statues_input)
         
         # add the item to the system
         # and save to the json file
@@ -57,6 +75,10 @@ class System:
         # count the number of items
         self.count += 1
 
+        # load items from js file
+        self.load_items(self.filename)
+
+    # save items to file
     def save_items(self, filename=None):
         #Justin
 
@@ -68,6 +90,7 @@ class System:
         # add a success message
         print(f"Items saved to {filename} successfully.")
 
+    # search items by keyword
     def search_item(self,keyword):
         #ZHU
 
@@ -75,7 +98,7 @@ class System:
         results=[item for item in self.items
                 if keyword.lower() == item.name.lower()
                 or keyword.lower () == item.location.lower()
-                or keyword.lower () == item.location.lower()]
+                or keyword.lower () == item.item_description.lower()]
         print("find relative information :",len(results))        
         enumerate(results)
         list(enumerate(results))
@@ -87,6 +110,7 @@ class System:
             print("unmatched item")
         return results
 
+    # delete item by name
     def delete_item(self,item_name):
         #ZHU
 
@@ -105,16 +129,23 @@ class System:
         else:
             print("The item has not been found")
 
+    # list all unclaimed items
     def list_items(self):
         #ZHU
 
         '''list all unclaimed items'''
-        for i , item in enumerate(self.items,1):
+        if not self.items: # it is empty
+            print("No items in the system.\n")
+            hold_on() # stop to view
+            return
+        for i,item in enumerate(self.items,1):
             if not item.status:
                 print(f"NO.{i} Item is:")
                 print(item)
+
         hold_on() # stop to view
 
+    # claim item by name
     def claim_item(self, item_name, owner_contact):
         #Charlotte
 
@@ -134,6 +165,7 @@ class System:
         print(f" No item named '{item_name}' was found.")
         return False
 
+    # update item information
     def update_item(self,item_id, **kwargs): 
         #XIE
 
@@ -149,6 +181,7 @@ class System:
         print(f"Item {item_id} not found.")
         return False
 
+    # login portal
     def login(self):
         #Charlotte
 
@@ -165,31 +198,34 @@ class System:
         else:
             print("Invalid username, please re-enter.")
 
+    # main menu
     def main_menu(self):
         #LUO 
         # ---Charlotte also did one---
 
         while True:
-            print("\n===== Lost and Found System =====")
-            print("1. I Found (Finder)")
-            print("2. I'm an Owner! (owner)")
-            print("3. I'm an Administrator! (admin)")
-            print("0. Exit System")
-            choice=input("\nPlease select an option (0-3): ")  # Main menu selection
+            print("===== Lost and Found System =====")
+            print("1. I Lost")
+            print("2. I Found")
+            print("3. Administrator")
+            print("0. Exit")
+            choice=input("*Please select an option (0-3): ")  # Main menu selection
             print() # New line for better readability
             if choice == '1':
-                self.finder_menu()
-            elif choice == '2':
                 self.owner_menu()
+            elif choice == '2':
+                self.finder_menu()
             elif choice == '3':
                 self.admin_menu()
             elif choice == '0':
+                self.load_items(self.filename) # make sure json up-to-date
                 print("Thank you for using the Lost and Found System! Goodbye!")
                 break
             else:
-                print("Invalid choice, please try again!")    
+                print("Invalid choice, please try again!") 
 
-    def owner_menu(self):
+    # owner menu
+    def owner_menu(self): # lost
         #Charlotte
         # ---LUO also did one---
 
@@ -197,29 +233,41 @@ class System:
             print("\n===== Owner Menu =====")
             print("1. Search Claimable Items (by keyword)")
             print("2. View All Claimable Items")
+            print("3. The item is not in the list?")
             print("0. Return to Main Menu")
-            
-            choice = input("Please select an option [0-3]: ")
-            print() # New line for better readability
+            choice = input("*Please select an option [0-3]: ")
             
             if choice == '1':
+                print() # New line for better readability
                 keyword = input("Enter search keyword (item name/description): ")
                 results = self.search_item(keyword)
                 if results:
                     for item in results:
                         print(f"ID: {item.item_id} | Name: {item.name}")
-                        print(f"Description: {item.description} | Location: {item.location}")
+                        print(f"Description: {item.item_description} | Location: {item.location}")
                 else:
                     print("No matching items found.")
+                hold_on() # stop to view
             
             elif choice == '2':
+                print() # New line for better readability
                 self.list_items()
             elif choice == '0':
-                break
-            
+                print() # New line for better readability
+                break # exit to main page
+            elif choice == '3':
+                self.declare_lost()
             else:
                 print("Invalid input, please try again.")
 
+    # in case that the item is to be found
+    def declare_lost(self): 
+        #Justin
+
+        print("Please declare your lost item details:")
+        self.add_item(lost_or_found='lost')
+
+    # finder menu
     def finder_menu(self):
         #LUO
 
@@ -229,19 +277,21 @@ class System:
             print("2. View All Claimable Items")
             print("3. Submit Found Item")
             print("0. Return to Main Menu")
-            choice=input("Please select an option (0-3): ")  # User function selection
+            choice=input("*Please select an option (0-3): ")  # User function selection
             if choice == '1':  # Search
                 keyword=input("Enter item keyword: ")
                 results=self.search_item(keyword)
                 if results:
                     for item in results:
-                        print(f"Item Name: {item.name}, Description: {item.description}, Found Location: {item.destination}")
+                        print(f"Item Name: {item.name}, Description: {item.item_description}, "
+                              f"Found Location: {item.location}")
                 else:
                         print("No matching items found.")
+                hold_on() # viewing
             elif choice == '2':  # View
                 self.list_items()
             elif choice == '3':  # Submit
-                self.add_item()
+                self.add_item(lost_or_found='found')
                 print("Found item submitted successfully!")
             elif choice == '0':
                 break
@@ -249,6 +299,7 @@ class System:
             else:
                 print("Invalid choice, please try again!")
     
+    # admin menu
     def admin_menu(self):
         #LUO
 
@@ -257,7 +308,7 @@ class System:
             print("1. Delete Item")
             print("2. View Items (Claimed/Unclaimed)")
             print("0. Return to Main Menu")
-            choice=input("Please select an option [0-3]: ")  # Admin input
+            choice=input("*Please select an option [0-3]: ")  # Admin input
             if choice == '1':  # Delete item
                 item_id=input("Enter item ID to delete: ")
                 # Note: item_id is necessary, can be assigned using index
