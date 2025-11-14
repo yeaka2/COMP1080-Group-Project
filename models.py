@@ -1,5 +1,42 @@
 import json
 
+class User:
+# (by XIE) class to represent a user in the system
+    def __init__(self, username, password, role, contact='', email=''):
+        self.username = username
+        self.password = password
+        self.role = role #e.g., admin, owner, finder
+        self.contact = contact
+        self.email = email
+
+    def __str__(self):
+        # this function is to print the details of a user object
+        return (f"Username: {self.username}\n"
+                f"Role: {self.role}\n"
+                f"Contact: {self.contact}\n"
+                f"Email: {self.email}\n")
+    
+    def to_dict(self):
+        # convert User object to dictionary; Useful for saving users to json files
+        return {
+            "username": self.username,
+            "password": self.password,
+            "role": self.role,
+            "contact": self.contact,
+            "email": self.email
+        }
+    
+    @staticmethod
+    def from_dict(data):
+        # create User object from dictionary; Useful for loading users from json files
+        return User(
+            username=data['username'], # mandatory fields
+            password=data['password'], # mandatory fields
+            role=data['role'], # mandatory fields
+            contact=data.get('contact',''), # optional fields
+            email=data.get('email','') # optional fields
+        )
+    
 class Item:
 # (by XIE) class to represent an item in the system
     
@@ -91,5 +128,4 @@ if __name__ == "__main__":
     print("Claimed:", item1)
     item1.status = False
     print("Claimed:", item1)
-
 '''
