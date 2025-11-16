@@ -13,11 +13,24 @@ class System:
     # constructor
     def __init__(self,filename="items.json"):
         #Justin
+        print("Initializing the Lost and Found System...")
         self.filename = filename # JSON file to store items
         self.max_id = 0
         self.load_items(self.filename) # load existing items from file
+        self.load_user() # load existing users from file
         self.count = 0 # count the number of items
-    
+        self.register_test_accounts() # create test accounts
+
+    def register_test_accounts(self):
+        #Justin
+        # create test accounts for the three roles
+        admin = User("adminuser", self.hash_password("adminpass"), "admin", "1234567890", "admin@example.com")
+        owner = User("owneruser", self.hash_password("ownerpass"), "owner", "0987654321", "owner@example.com")
+        finder = User("finderuser", self.hash_password("finderpass"), "finder", "1122334455", "finder@example.com")
+        self.users.append(admin)
+        self.users.append(owner)
+        self.users.append(finder)
+
     # load items from file
     def load_items(self, filename="items.json"):
         #Justin
@@ -38,8 +51,17 @@ class System:
             self.max_id = 0
             self.items = []
 
-    def load_users(self, filename="users.json"):
-        pass
+    def load_user(self, filename="users.json"):
+        #Justin
+
+        try:
+            with open(filename, "r") as f:
+                users_data = json.load(f)
+                self.users = [User.from_dict(user) for user in users_data]
+        except FileNotFoundError:
+            self.users = []
+        except json.JSONDecodeError:
+            self.users = []
 
     # save items to file
     def add_item(self,lost_or_found):
@@ -105,8 +127,13 @@ class System:
         # add a success message
         print(f"Items saved to {filename} successfully.")
     
-    def save_users(self, filename="users.json"):
-        pass
+        # save users to json file
+
+    def save_users(self, filename="users.json"): 
+        #Justin
+        data = [user.to_dict() for user in self.users]
+        with open((filename), "w") as f:
+            json.dump(data, f, indent=4)
 
     def id_item(self, item_id):
         #ZHU
@@ -277,23 +304,49 @@ class System:
         print("User registered successfully!")
         print(new_user)
         
+        # load the users from json file
 
+    def login(self,login_role=None):
+        #Charlotte, edited by Justin
 
-    def login(self):
-        #Charlotte
 
         """Login portal"""
-        print("===== Login interface =====")
-        username = input("Please enter your username： admin / owner / finder：").strip()
-        if username == "admin":
-            self.admin_menu()
-        elif username == "owner":
-            contact = input("Please fill in your contact information (mobile phone number or email address):")
-            self.owner_menu(contact)
-        elif username == "finder":
-            self.finder_menu()
-        else:
-            print("Invalid username, please re-enter.")
+        while True:
+            print("\n===== Login/Register Interface =====")
+            print("1. Login")
+            print("2. Register")
+            print("0. Return to Main Menu")
+            choice = input("*Please select an option (0-2): ").strip()
+            if choice == '2':
+                self.register()
+            elif choice == '1':
+                print("Enter the username:")
+                username=input()
+                print("Enter the password:")
+                password=input()
+
+                hashed_password=self.hash_password(password)
+                for user in self.users:
+                    print(user.username,username)
+                    print(user.password,hashed_password)
+                    if user.username == username and user.password == hashed_password:
+
+                        if login_role and user.role != login_role:
+                            print(f"Access denied. This portal is for {login_role} only.")
+                            return None
+                        print(f"Welcome, {user.username}! You have logged in as {user.role}.")
+                        if user.role == 'admin':
+                            self.admin_menu()
+                        elif user.role == 'owner':
+                            self.owner_menu()
+                        elif user.role == 'finder':
+                            self.finder_menu()
+                        return user
+                print("Invalid username or password. Please try again.")
+            elif choice == '0':
+                return None
+            else:
+                print("Invalid choice, please try again!")
 
     # main menu
     def main_menu(self):
@@ -309,11 +362,11 @@ class System:
             choice=input("*Please select an option (0-3): ")  # Main menu selection
             print() # New line for better readability
             if choice == '1':
-                self.owner_menu()
+                self.login(login_role='owner')
             elif choice == '2':
-                self.finder_menu()
+                self.login(login_role='finder')
             elif choice == '3':
-                self.admin_menu()
+                self.login(login_role='admin')
             elif choice == '0':
                 self.load_items(self.filename) # make sure json up-to-date
                 print("Thank you for using the Lost and Found System! Goodbye!")
