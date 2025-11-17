@@ -301,7 +301,7 @@ class System:
                     self.owner_menu()
                 elif user.role == 'finder':
                     self.finder_menu()
-                self.current_user = None  # 退出时重置
+                self.current_user = None
                 return
         print("Invalid username or password")
     # main menu
@@ -516,3 +516,4 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
