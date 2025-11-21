@@ -30,7 +30,7 @@ class System:
         self.users.append(admin)
         self.users.append(owner)
         self.users.append(finder)
-
+    
     # load items from file
     def load_items(self, filename="items.json"):
         #Justin
@@ -126,6 +126,47 @@ class System:
             json.dump(data, f, indent=4) # pretty print json
         # add a success message
         print(f"Items saved to {filename} successfully.")
+
+    def search_item(self,keyword):
+    '''searching items's relevant imformation'''
+    id_results = [item for item in self.items if str(item.id) in str(keyword)]
+    if id_results:
+        print("find relevant information (by id)",len(id_results))
+        for i , item in enumerate(id_results,start=1):
+            print(i,item)
+        return id_results
+    other_results=[item for item in self.items
+             if keyword.lower() in item.name.lower()
+             or keyword.lower() in item.location.lower()
+             or keyword.lower() in item.description.lower()]
+    print("find relative information :",len(other_results))        
+    enumerate(other_results)
+    list(enumerate(other_results))
+    [*enumerate(other_results,start=1)]
+    if other_results:
+        for i , item in enumerate(other_results):
+            print(i,item)
+    else:
+        print(" unmatched item")
+    return other_results
+
+    def delete_item(self,identifier):
+        '''delete finding items '''
+        original_items_len=len(self.items)
+        self.items=[item for item in self.items 
+                    if str(item.id) != str(identifier)]
+        if len(self.items) < original_items_len:
+            self.save_items()
+            print('The item has been deleted(by id) and saved')
+            return
+        self.items=[item for item in self.items 
+                    if item.name != identifier]
+        if len(self.items) < original_items_len:
+            self.save_items()
+            print('The item has been deleted(by name) and saved')
+            return
+        else:
+            print("The item has not been found")
     
         # save users to json file
 
@@ -502,3 +543,4 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
