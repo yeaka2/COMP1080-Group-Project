@@ -1,0 +1,25 @@
+{
+    "max_id": 6,
+    "items": [
+        {
+            "item_id": 5,
+            "name": "awd",
+            "contact": "Not applicable",
+            "Category": "awd",
+            "Description": "awd",
+            "Location": "Not applicable",
+            "Status": false,
+            "Lost_or_found": false
+        },
+        {
+            "item_id": 6,
+            "name": "kwad",
+            "contact": "Not applicable",
+            "Category": "kdwad",
+            "Description": "kdwadw",
+            "Location": "Not applicable",
+            "Status": false,
+            "Lost_or_found": false
+        }
+    ]
+}
