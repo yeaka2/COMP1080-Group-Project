@@ -129,7 +129,7 @@ class System:
 
     def search_item(self,keyword):
     '''searching items's relevant imformation'''
-    id_results = [item for item in self.items if str(item.id) in str(keyword)]
+    id_results = [item for item in self.items if str(item.item_id) in str(keyword)]
     if id_results:
         print("find relevant information (by id)",len(id_results))
         for i , item in enumerate(id_results,start=1):
@@ -154,7 +154,7 @@ class System:
         '''delete finding items '''
         original_items_len=len(self.items)
         self.items=[item for item in self.items 
-                    if str(item.id) != str(identifier)]
+                    if str(item.item_id) != str(identifier)]
         if len(self.items) < original_items_len:
             self.save_items()
             print('The item has been deleted(by id) and saved')
@@ -182,44 +182,7 @@ class System:
             if item.item_id == item_id:
                 return item
         return None
-    # search items by keyword
-    def search_item(self,keyword):
-        #ZHU
-
-        '''searching items's relevant imformation'''
-        results=[item for item in self.items
-                if keyword.lower() == item.name.lower()
-                or keyword.lower () == item.location.lower()
-                or keyword.lower () == item.description.lower()]
-        print("find relative information :",len(results))        
-        enumerate(results)
-        list(enumerate(results))
-        [*enumerate(results,start=1)]
-        if results:
-            for i , item in enumerate(results):
-                print(i,item)
-        else:
-            print("unmatched item")
-        return results
-
-    # delete item by name
-    def delete_item(self,item_name):
-        #ZHU
-
-        '''delete finding items '''
-        original_items_len=len(self.items)
-        self.items=[item for item in self.items 
-                    if item.name !=item_name]
-        for  j , item in enumerate(self.items,1):
-            if item.name==item_name:
-                del self.items[j]
-                print('The item has been deleted')
-                return
-        if len(self.items) < original_items_len:
-            self.save_items()
-            print('The item has been saved')
-        else:
-            print("The item has not been found")
+   
             
 
     # list all unclaimed items
@@ -543,4 +506,5 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
 
