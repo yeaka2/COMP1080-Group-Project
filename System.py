@@ -11,16 +11,26 @@ def hold_on():
 class System:
 
     # constructor
-    def __init__(self,filename="items.json",users_filename="users.json"):
+    def __init__(self,filename="items.json"):
         #Justin
+        print("Initializing the Lost and Found System...")
         self.filename = filename # JSON file to store items
         self.max_id = 0
         self.load_items(self.filename) # load existing items from file
+        self.load_user() # load existing users from file
         self.count = 0 # count the number of items
-        self.users_filename = users_filename # JSON file to store users
-        self.users = [] # list to store users
-        self.current_user = None # currently logged-in user
-    
+        self.register_test_accounts() # create test accounts
+
+    def register_test_accounts(self):
+        #Justin
+        # create test accounts for the three roles
+        admin = User("adminuser", self.hash_password("adminpass"), "admin", "1234567890", "admin@example.com")
+        owner = User("owneruser", self.hash_password("ownerpass"), "owner", "0987654321", "owner@example.com")
+        finder = User("finderuser", self.hash_password("finderpass"), "finder", "1122334455", "finder@example.com")
+        self.users.append(admin)
+        self.users.append(owner)
+        self.users.append(finder)
+
     # load items from file
     def load_items(self, filename="items.json"):
         #Justin
@@ -41,8 +51,17 @@ class System:
             self.max_id = 0
             self.items = []
 
-    def load_users(self, filename="users.json"):
-        pass
+    def load_user(self, filename="users.json"):
+        #Justin
+
+        try:
+            with open(filename, "r") as f:
+                users_data = json.load(f)
+                self.users = [User.from_dict(user) for user in users_data]
+        except FileNotFoundError:
+            self.users = []
+        except json.JSONDecodeError:
+            self.users = []
 
     # save items to file
     def add_item(self,lost_or_found):
@@ -70,7 +89,7 @@ class System:
             location = "Not applicable"
 
         # item_id = TODO
-        # maybe we should also define [item_id] here?
+        # maybe we should also deine [item_id] here?
 
         item = Item(name = name, 
                     contact = contact, 
@@ -108,8 +127,13 @@ class System:
         # add a success message
         print(f"Items saved to {filename} successfully.")
     
-    def save_users(self, filename="users.json"):
-        pass
+        # save users to json file
+
+    def save_users(self, filename="users.json"): 
+        #Justin
+        data = [user.to_dict() for user in self.users]
+        with open((filename), "w") as f:
+            json.dump(data, f, indent=4)
 
     def id_item(self, item_id):
         #ZHU
@@ -119,46 +143,44 @@ class System:
         return None
     # search items by keyword
     def search_item(self,keyword):
+        #ZHU
+
         '''searching items's relevant imformation'''
-        id_results = [item for item in self.items if str(item.item_id) in str(keyword)]
-        if id_results:
-            print("find relevant information (by id)",len(id_results))
-            for i , item in enumerate(id_results,start=1):
-                print(i,item)
-            return id_results
-        other_results=[item for item in self.items
-                if keyword.lower() in item.name.lower()
-                or keyword.lower() in item.location.lower()
-                or keyword.lower() in item.description.lower()]
-        print("find relative information :",len(other_results))        
-        enumerate(other_results)
-        list(enumerate(other_results))
-        [*enumerate(other_results,start=1)]
-        if other_results:
-            for i , item in enumerate(other_results):
+        results=[item for item in self.items
+                if keyword.lower() == item.name.lower()
+                or keyword.lower () == item.location.lower()
+                or keyword.lower () == item.description.lower()]
+        print("find relative information :",len(results))        
+        enumerate(results)
+        list(enumerate(results))
+        [*enumerate(results,start=1)]
+        if results:
+            for i , item in enumerate(results):
                 print(i,item)
         else:
-            print(" unmatched item")
-        return other_results
+            print("unmatched item")
+        return results
 
-    def delete_item(self,identifier):
-       # delete finding items
+    # delete item by name
+    def delete_item(self,item_name):
+        #ZHU
+
+        '''delete finding items '''
         original_items_len=len(self.items)
         self.items=[item for item in self.items 
-                    if str(item.item_id) != str(identifier)]
+                    if item.name !=item_name]
+        for  j , item in enumerate(self.items,1):
+            if item.name==item_name:
+                del self.items[j]
+                print('The item has been deleted')
+                return
         if len(self.items) < original_items_len:
             self.save_items()
-            print('The item has been deleted(by id) and saved')
-            return True
-        self.items=[item for item in self.items 
-                    if item.name != identifier]
-        if len(self.items) < original_items_len:
-            self.save_items()
-            print('The item has been deleted(by name) and saved')
-            return True
+            print('The item has been saved')
         else:
             print("The item has not been found")
-    
+            
+
     # list all unclaimed items
     def list_items(self):
         #ZHU
@@ -282,68 +304,80 @@ class System:
         print("User registered successfully!")
         print(new_user)
         
+        # load the users from json file
+
+    def login(self,login_role=None):
+        #Charlotte, edited by Justin
 
 
-    def login(self):
-        #Charlotte
-        print("===== Login interface =====")
-        username = input("Please enter your username: ").strip()
-        password = input("Please enter your password: ").strip()
-        hashed_pwd = self.hash_password(password)
-        for user in self.users:
-            if user.username == username and user.password == hashed_pwd:
-                self.current_user = user
-                print(f"Login successful! Welcome {user.username}")
-                # to different menus based on role
-                if user.role == 'admin':
-                    self.admin_menu()
-                elif user.role == 'owner':
-                    self.owner_menu()
-                elif user.role == 'finder':
-                    self.finder_menu()
-                self.current_user = None
-                return
-        print("Invalid username or password")
+        """Login portal"""
+        while True:
+            print("\n===== Login/Register Interface =====")
+            print("1. Login")
+            print("2. Register")
+            print("0. Return to Main Menu")
+            choice = input("*Please select an option (0-2): ").strip()
+            if choice == '2':
+                self.register()
+            elif choice == '1':
+                print("Enter the username:")
+                username=input()
+                print("Enter the password:")
+                password=input()
+
+                hashed_password=self.hash_password(password)
+                for user in self.users:
+                    print(user.username,username)
+                    print(user.password,hashed_password)
+                    if user.username == username and user.password == hashed_password:
+
+                        if login_role and user.role != login_role:
+                            print(f"Access denied. This portal is for {login_role} only.")
+                            return None
+                        print(f"Welcome, {user.username}! You have logged in as {user.role}.")
+                        if user.role == 'admin':
+                            self.admin_menu()
+                        elif user.role == 'owner':
+                            self.owner_menu()
+                        elif user.role == 'finder':
+                            self.finder_menu()
+                        return user
+                print("Invalid username or password. Please try again.")
+            elif choice == '0':
+                return None
+            else:
+                print("Invalid choice, please try again!")
+
     # main menu
     def main_menu(self):
         #LUO 
+        # ---Charlotte also did one---
+
         while True:
             print("===== Lost and Found System =====")
-            print("1. Login")  
-            print("2. Register")  
-            print("3. Guest Mode") 
-            print("0. Exit")
-            choice = input("*Please select an option (0-3): ")
-            if choice == '1':
-                self.login()
-            elif choice == '2':
-                self.register()
-            elif choice == '3':
-                #to original menu
-                self.guest_menu() #new guest menu
-            elif choice == '0':
-                print("Goodbye!")
-                break
-    def guest_menu(self):
-        #LUO
-        while True:
-            print("\n===== Guest Mode =====")
             print("1. I Lost")
             print("2. I Found")
-            print("0. Return to Previous Menu")
-            choice = input("*Please select an option (0-3): ")
+            print("3. Administrator")
+            print("0. Exit")
+            choice=input("*Please select an option (0-3): ")  # Main menu selection
+            print() # New line for better readability
             if choice == '1':
-                self.owner_menu()
+                self.login(login_role='owner')
             elif choice == '2':
-                self.finder_menu()
+                self.login(login_role='finder')
+            elif choice == '3':
+                self.login(login_role='admin')
             elif choice == '0':
+                self.load_items(self.filename) # make sure json up-to-date
+                print("Thank you for using the Lost and Found System! Goodbye!")
                 break
             else:
-                print("Invalid choice")
+                print("Invalid choice, please try again!") 
 
     # owner menu
     def owner_menu(self): # lost
-        #CHarlotte
+        #Charlotte
+        # ---LUO also did one---
 
         while True:
             print("\n===== Owner Menu =====")
@@ -366,10 +400,10 @@ class System:
                 hold_on() # stop to view
             
             elif choice == '2':
-                print()
+                print() # New line for better readability
                 self.list_items()
             elif choice == '0':
-                print() 
+                print() # New line for better readability
                 break # exit to main page
             elif choice == '3':
                 self.declare_lost()
@@ -416,80 +450,32 @@ class System:
                 print("Invalid choice, please try again!")
     
     # admin menu
-
     def admin_menu(self):
         #LUO
-        if self.current_user and self.current_user.role != 'admin':
-            print("Permission denied: Admin role required")
-            return
+
         while True:
             print("\n===== Administrator Menu =====")
             print("1. Delete Item")
             print("2. View Items (Claimed/Unclaimed)")
-            print("3. Update Item Information")  
             print("0. Return to Main Menu")
             choice=input("*Please select an option [0-3]: ")  # Admin input
             if choice == '1':  # Delete item
                 item_id=input("Enter item ID to delete: ")
+                # Note: item_id is necessary, can be assigned using index
                 if self.delete_item(item_id):
                     print("Item deleted successfully.")
                 else:
                     print("Item not found.")
             elif choice == '2':
+                # Note: For better display, originally planned to show claimed/unclaimed counts separately,
+                # but simplified to list all items since there's no item_status in the previous implementation
                 self.list_items()
-            elif choice == '3':  
-                item_id = input("Enter item ID to update: ")
-                try:
-                    item_id = int(item_id)
-                except ValueError:
-                    print("Invalid item ID format.")
-                    continue
-                
-                print("Enter new information (press Enter to keep current value):")
-                name = input("New item name: ").strip()
-                category = input("New type: ").strip()
-                description = input("New description: ").strip()
-                location = input("New location: ").strip()
-                contact = input("New contact: ").strip()
-                
-                updates = {}
-                if name:
-                    updates['name'] = name
-                if category:
-                    updates['category'] = category
-                if description:
-                    updates['description'] = description
-                if location:
-                    updates['location'] = location
-                if contact:
-                    updates['contact'] = contact
-                
-                if updates:  
-                    self.update_item(item_id, **updates)
-                else:
-                    print("No information to update.")
             elif choice == '0':
                 break
                 print("Returning to main menu")
             else:
                 print("Invalid choice, please try again!")
-    def load_users(self, filename=None):
-        #LUO
-        if not filename:
-            filename = self.users_filename
-        try:
-            with open(filename, "r") as f:
-                users_data = json.load(f)
-                self.users = [User.from_dict(user) for user in users_data]
-        except (FileNotFoundError, json.JSONDecodeError):
-            self.users = []
-    def save_users(self, filename=None):
-        if not filename:
-            filename = self.users_filename
-        users_data = [user.to_dict() for user in self.users]
-        with open(filename, "w") as f:
-            json.dump(users_data, f, indent=4)
-        print(f"Users saved to {filename} successfully.")
+
 if __name__ == "__main__":
     system = System()
     system.main_menu()
@@ -516,4 +502,3 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
-
