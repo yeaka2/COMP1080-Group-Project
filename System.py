@@ -11,13 +11,16 @@ def hold_on():
 class System:
 
     # constructor
-    def __init__(self,filename="items.json"):
+    def __init__(self,filename="items.json",users_filename="users.json"):
         #Justin
         self.filename = filename # JSON file to store items
         self.max_id = 0
         self.load_items(self.filename) # load existing items from file
         self.count = 0 # count the number of items
-    
+        self.users_filename = users_filename # JSON file to store users
+        self.users = [] # list to store users
+        self.current_user = None # currently logged-in user
+        self.load_users()
     # load items from file
     def load_items(self, filename="items.json"):
         #Justin
@@ -56,7 +59,7 @@ class System:
         category = input("Enter item type (e.g., electronics, clothing): ")
         description = input("Enter item description " \
         "(press Enter to leave blank): ")
-        statues_input = False # default to unclaimed or unfound(for lost items)
+        status_input = False # default to unclaimed or unfound(for lost items)
 
         # applicable for found case
         if lost_or_found == 'found':
@@ -67,7 +70,7 @@ class System:
             location = "Not applicable"
 
         # item_id = TODO
-        # maybe we should also deine [item_id] here?
+        # maybe we should also define [item_id] here?
 
         item = Item(name = name, 
                     contact = contact, 
@@ -75,7 +78,7 @@ class System:
                     description = description, 
                     location = location,
                     lost_or_found = Bool_LOF,
-                    status = statues_input,
+                    status = status_input,
                     item_id = self.get_new_item_id())
         
         # add the item to the system
@@ -115,45 +118,70 @@ class System:
                 return item
         return None
     # search items by keyword
-    def search_item(self,keyword):
-        #ZHU
-
-        '''searching items's relevant imformation'''
-        results=[item for item in self.items
-                if keyword.lower() == item.name.lower()
-                or keyword.lower () == item.location.lower()
-                or keyword.lower () == item.description.lower()]
-        print("find relative information :",len(results))        
-        enumerate(results)
-        list(enumerate(results))
-        [*enumerate(results,start=1)]
-        if results:
-            for i , item in enumerate(results):
-                print(i,item)
-        else:
-            print("unmatched item")
+    def search_item(self, keyword):
+        results = []
+        
+        try:
+            if not keyword.strip():
+                print("Error: Search keyword cannot be empty. Please enter valid content!")
+                return results
+            
+            for item in self.items:
+                if hasattr(item, 'name') and hasattr(item, 'category') and hasattr(item, 'description'):
+                    
+                    if (keyword.lower() in str(item.name).lower() 
+                        or keyword.lower() in str(item.category).lower() 
+                        or keyword.lower() in str(item.description).lower()):
+                        results.append(item)
+                else:
+                    print("Warning: Invalid item data detected (missing fields), skipped.")
+                    continue
+            
+            if results:
+                print(f"\nFound {len(results)} items matching '{keyword}':")
+                for i, item in enumerate(results, start=1):
+                    status_str = "Claimed" if item.status else "Unclaimed"
+                    lost_found_str = "Found" if item.lost_or_found else "Lost"
+                    print(f"""
+                    No.: {i}
+                    Item Name: {item.name}
+                    Category: {item.category}
+                    Description: {item.description}
+                    Location: {item.location or "Not provided"}
+                    Status: {status_str}
+                    Type: {lost_found_str}
+                    Contact: {item.contact or "Not provided"}
+                    """)
+            else:
+                print(f"\nNo items containing the keyword '{keyword}' found. Suggestions:")
+                print("1. Check if the keyword spelling is correct")
+                print("2. Use shorter keywords (e.g., 'phone' instead of 'black smart phone')")
+                print("3. Try different keywords (e.g., search by category 'electronic device')")
+        
+        except Exception as e:
+            print(f"\nError occurred during search: {str(e)}")
+            print("Please try again later or contact the administrator for assistance")
+        
         return results
 
-    # delete item by name
-    def delete_item(self,item_name):
-        #ZHU
-
-        '''delete finding items '''
+    def delete_item(self,identifier):
+       # delete finding items
         original_items_len=len(self.items)
         self.items=[item for item in self.items 
-                    if item.name !=item_name]
-        for  j , item in enumerate(self.items,1):
-            if item.name==item_name:
-                del self.items[j]
-                print('The item has been deleted')
-                return
+                    if str(item.item_id) != str(identifier)]
         if len(self.items) < original_items_len:
             self.save_items()
-            print('The item has been saved')
+            print('The item has been deleted(by id) and saved')
+            return True
+        self.items=[item for item in self.items 
+                    if item.name != identifier]
+        if len(self.items) < original_items_len:
+            self.save_items()
+            print('The item has been deleted(by name) and saved')
+            return True
         else:
             print("The item has not been found")
-            
-
+    
     # list all unclaimed items
     def list_items(self):
         #ZHU
@@ -173,21 +201,17 @@ class System:
     # claim item by name
     def claim_item(self, item_name, owner_contact):
         #Charlotte
-
-        """Claim your lost item (operation by the owner)"""
         for item in self.items:
-            if item.item_name == item_name:
-                # If the item has already been claimed
-                if hasattr(item, "claimed") and item.claimed:
-                    print(" The item has been claimed.")
+            if item.name == item_name:
+                if item.status:
+                    print("The item has been claimed.")
                     return False
-                # Modify item status
-                item.claimed = True
-                item.owner_contact = owner_contact
+                item.status = True
+                item.contact = owner_contact
                 self.save_items(self.filename)
-                print(f" Item '{item_name}' has been claimed by {owner_contact}.")
+                print(f"Item '{item_name}' has been claimed by {owner_contact}.")
                 return True
-        print(f" No item named '{item_name}' was found.")
+        print(f"No item named '{item_name}' was found.")
         return False
     
     def get_new_item_id(self):
@@ -281,50 +305,69 @@ class System:
 
     def login(self):
         #Charlotte
-
-        """Login portal"""
         print("===== Login interface =====")
-        username = input("Please enter your username： admin / owner / finder：").strip()
-        if username == "admin":
-            self.admin_menu()
-        elif username == "owner":
-            contact = input("Please fill in your contact information (mobile phone number or email address):")
-            self.owner_menu(contact)
-        elif username == "finder":
-            self.finder_menu()
-        else:
-            print("Invalid username, please re-enter.")
-
+        username = input("Please enter your username: ").strip()
+        password = input("Please enter your password: ").strip()
+        hashed_pwd = self.hash_password(password)
+        for user in self.users:
+            if user.username == username and user.password == hashed_pwd:
+                self.current_user = user
+                print(f"Login successful! Welcome {user.username}")
+                # to different menus based on role
+                if user.role == 'admin':
+                    self.admin_menu()
+                elif user.role == 'owner':
+                    self.owner_menu()
+                elif user.role == 'finder':
+                    self.finder_menu()
+                self.current_user = None
+                return
+        print("Invalid username or password")
     # main menu
     def main_menu(self):
         #LUO 
-        # ---Charlotte also did one---
-
         while True:
             print("===== Lost and Found System =====")
-            print("1. I Lost")
-            print("2. I Found")
-            print("3. Administrator")
+            print("1. Login")  
+            print("2. Register")  
+            print("3. Guest Mode") 
             print("0. Exit")
-            choice=input("*Please select an option (0-3): ")  # Main menu selection
-            print() # New line for better readability
+            choice = input("*Please select an option (0-3): ")
             if choice == '1':
-                self.owner_menu()
+                self.login()
             elif choice == '2':
-                self.finder_menu()
+                self.register()
             elif choice == '3':
-                self.admin_menu()
+                #to original menu
+                self.guest_menu() #new guest menu
             elif choice == '0':
-                self.load_items(self.filename) # make sure json up-to-date
-                print("Thank you for using the Lost and Found System! Goodbye!")
+                print("Goodbye!")
                 break
             else:
-                print("Invalid choice, please try again!") 
+                print("Wrong option! Please try again!")
+    def guest_menu(self):
+        #LUO
+        while True:
+            print("\n===== Guest Menu =====")
+            print("1. Search items")
+            print("2. List all items")
+            print("0. Return to Main Menu")
+            choice = input("Please enter（0-2）：")
+            
+            if choice == '1':
+                keyword = input("Please enter the keyworld：")
+                self.search_item(keyword)
+            elif choice == '2':
+                self.list_items()
+            elif choice == '0':
+                print("Return to Main Menu...")
+                break
+            else:
+                print("Wrong input! Please try again！")
 
     # owner menu
     def owner_menu(self): # lost
-        #Charlotte
-        # ---LUO also did one---
+        #CHarlotte
 
         while True:
             print("\n===== Owner Menu =====")
@@ -347,10 +390,10 @@ class System:
                 hold_on() # stop to view
             
             elif choice == '2':
-                print() # New line for better readability
+                print()
                 self.list_items()
             elif choice == '0':
-                print() # New line for better readability
+                print() 
                 break # exit to main page
             elif choice == '3':
                 self.declare_lost()
@@ -397,32 +440,80 @@ class System:
                 print("Invalid choice, please try again!")
     
     # admin menu
+
     def admin_menu(self):
         #LUO
-
+        if self.current_user and self.current_user.role != 'admin':
+            print("Permission denied: Admin role required")
+            return
         while True:
             print("\n===== Administrator Menu =====")
             print("1. Delete Item")
             print("2. View Items (Claimed/Unclaimed)")
+            print("3. Update Item Information")  
             print("0. Return to Main Menu")
             choice=input("*Please select an option [0-3]: ")  # Admin input
             if choice == '1':  # Delete item
                 item_id=input("Enter item ID to delete: ")
-                # Note: item_id is necessary, can be assigned using index
                 if self.delete_item(item_id):
                     print("Item deleted successfully.")
                 else:
                     print("Item not found.")
             elif choice == '2':
-                # Note: For better display, originally planned to show claimed/unclaimed counts separately,
-                # but simplified to list all items since there's no item_status in the previous implementation
                 self.list_items()
+            elif choice == '3':  
+                item_id = input("Enter item ID to update: ")
+                try:
+                    item_id = int(item_id)
+                except ValueError:
+                    print("Invalid item ID format.")
+                    continue
+                
+                print("Enter new information (press Enter to keep current value):")
+                name = input("New item name: ").strip()
+                category = input("New type: ").strip()
+                description = input("New description: ").strip()
+                location = input("New location: ").strip()
+                contact = input("New contact: ").strip()
+                
+                updates = {}
+                if name:
+                    updates['name'] = name
+                if category:
+                    updates['category'] = category
+                if description:
+                    updates['description'] = description
+                if location:
+                    updates['location'] = location
+                if contact:
+                    updates['contact'] = contact
+                
+                if updates:  
+                    self.update_item(item_id, **updates)
+                else:
+                    print("No information to update.")
             elif choice == '0':
                 break
                 print("Returning to main menu")
             else:
                 print("Invalid choice, please try again!")
-
+    def load_users(self, filename=None):
+        #LUO
+        if not filename:
+            filename = self.users_filename
+        try:
+            with open(filename, "r") as f:
+                users_data = json.load(f)
+                self.users = [User.from_dict(user) for user in users_data]
+        except (FileNotFoundError, json.JSONDecodeError):
+            self.users = []
+    def save_users(self, filename=None):
+        if not filename:
+            filename = self.users_filename
+        users_data = [user.to_dict() for user in self.users]
+        with open(filename, "w") as f:
+            json.dump(users_data, f, indent=4)
+        print(f"Users saved to {filename} successfully.")
 if __name__ == "__main__":
     system = System()
     system.main_menu()
@@ -449,3 +540,4 @@ ZHU: ZHU Jinze
 Charlotte: LUO wenqi
 LUO: LUO Zhenyu
 """
+
