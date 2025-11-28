@@ -41,9 +41,6 @@ class System:
             self.max_id = 0
             self.items = []
 
-    def load_users(self, filename="users.json"):
-        pass
-
     # save items to file
     def add_item(self,lost_or_found):
         #Justin
@@ -66,8 +63,8 @@ class System:
             contact = input("Enter your contact information: ")
             location = input("Enter location where the item was found: ")
         else:
-            contact = "Not applicable"
-            location = "Not applicable"
+            contact = input("Enter your contact information: ")
+            location = input("Enter location where the item was found: ")
 
         # item_id = TODO
         # maybe we should also define [item_id] here?
@@ -106,81 +103,61 @@ class System:
         with open(filename, "w") as f:
             json.dump(data, f, indent=4) # pretty print json
         # add a success message
-        print(f"Items saved to {filename} successfully.")
-    
-    def save_users(self, filename="users.json"):
-        pass
+        print(f"Items make changed in {filename} successfully.")
 
     def id_item(self, item_id):
         #ZHU
+        # get the item by item_id
         for item in self.items:
             if item.item_id == item_id:
                 return item
         return None
-    # search items by keyword
-    def search_item(self, keyword):
-        results = []
-        
-        try:
-            if not keyword.strip():
-                print("Error: Search keyword cannot be empty. Please enter valid content!")
-                return results
-            
-            for item in self.items:
-                if hasattr(item, 'name') and hasattr(item, 'category') and hasattr(item, 'description'):
-                    
-                    if (keyword.lower() in str(item.name).lower() 
-                        or keyword.lower() in str(item.category).lower() 
-                        or keyword.lower() in str(item.description).lower()):
-                        results.append(item)
-                else:
-                    print("Warning: Invalid item data detected (missing fields), skipped.")
-                    continue
-            
-            if results:
-                print(f"\nFound {len(results)} items matching '{keyword}':")
-                for i, item in enumerate(results, start=1):
-                    status_str = "Claimed" if item.status else "Unclaimed"
-                    lost_found_str = "Found" if item.lost_or_found else "Lost"
-                    print(f"""
-                    No.: {i}
-                    Item Name: {item.name}
-                    Category: {item.category}
-                    Description: {item.description}
-                    Location: {item.location or "Not provided"}
-                    Status: {status_str}
-                    Type: {lost_found_str}
-                    Contact: {item.contact or "Not provided"}
-                    """)
-            else:
-                print(f"\nNo items containing the keyword '{keyword}' found. Suggestions:")
-                print("1. Check if the keyword spelling is correct")
-                print("2. Use shorter keywords (e.g., 'phone' instead of 'black smart phone')")
-                print("3. Try different keywords (e.g., search by category 'electronic device')")
-        
-        except Exception as e:
-            print(f"\nError occurred during search: {str(e)}")
-            print("Please try again later or contact the administrator for assistance")
-        
-        return results
+    
+    def search_item(self,keyword):
+        #ZHU
+        '''searching items's relevant imformation'''
+        # search by id first
+        id_results = [item for item in self.items if str(item.item_id) in str(keyword)]
+        #print(id_results)
+        if id_results:
+            print("find relevant information (by id)",len(id_results))
+            for i , item in enumerate(id_results,start=1):
+                print(f"NO.{i}")
+                print(item)
+            return id_results
+        # then search by other fields
+        other_results=[item for item in self.items
+                 if keyword.lower() in item.name.lower()
+                 or keyword.lower() in item.location.lower()
+                 or keyword.lower() in item.description.lower()]
+        print("find relative information :",len(other_results))      
+        enumerate(other_results)
+        list(enumerate(other_results))
+        [*enumerate(other_results,start=1)]
+        #print(other_results)
+        if other_results:
+            for i , item in enumerate(other_results, start=1):
+                print(f"NO.{i}")
+                print(item)
+        else:
+            print(" unmatched item")
+            return other_results
 
     def delete_item(self,identifier):
-       # delete finding items
+        #ZHU
+        '''delete finding items '''
         original_items_len=len(self.items)
         self.items=[item for item in self.items 
                     if str(item.item_id) != str(identifier)]
         if len(self.items) < original_items_len:
             self.save_items()
-            print('The item has been deleted(by id) and saved')
             return True
         self.items=[item for item in self.items 
                     if item.name != identifier]
         if len(self.items) < original_items_len:
             self.save_items()
-            print('The item has been deleted(by name) and saved')
             return True
-        else:
-            print("The item has not been found")
+        return False
     
     # list all unclaimed items
     def list_items(self):
@@ -304,7 +281,7 @@ class System:
 
 
     def login(self):
-        #Charlotte
+        #Charlotte, edited by Justin
         print("===== Login interface =====")
         username = input("Please enter your username: ").strip()
         password = input("Please enter your password: ").strip()
@@ -380,13 +357,7 @@ class System:
             if choice == '1':
                 print() # New line for better readability
                 keyword = input("Enter search keyword (item name/description): ")
-                results = self.search_item(keyword)
-                if results:
-                    for item in results:
-                        print(f"ID: {item.item_id} | Name: {item.name}")
-                        print(f"Description: {item.description} | Location: {item.location}")
-                else:
-                    print("No matching items found.")
+                self.search_item(keyword)
                 hold_on() # stop to view
             
             elif choice == '2':
@@ -420,15 +391,10 @@ class System:
             choice=input("*Please select an option (0-3): ")  # User function selection
             if choice == '1':  # Search
                 keyword=input("Enter item keyword: ")
-                results=self.search_item(keyword)
-                if results:
-                    for item in results:
-                        print(f"Item Name: {item.name}, Description: {item.description}, "
-                              f"Found Location: {item.location}")
-                else:
-                        print("No matching items found.")
+                self.search_item(keyword)
                 hold_on() # viewing
             elif choice == '2':  # View
+                
                 self.list_items()
             elif choice == '3':  # Submit
                 self.add_item(lost_or_found='found')
@@ -449,7 +415,7 @@ class System:
         while True:
             print("\n===== Administrator Menu =====")
             print("1. Delete Item")
-            print("2. View Items (Claimed/Unclaimed)")
+            print("2. View Items (Unfound/Unclaimed)")
             print("3. Update Item Information")  
             print("0. Return to Main Menu")
             choice=input("*Please select an option [0-3]: ")  # Admin input
@@ -514,6 +480,8 @@ class System:
         with open(filename, "w") as f:
             json.dump(users_data, f, indent=4)
         print(f"Users saved to {filename} successfully.")
+
+
 if __name__ == "__main__":
     system = System()
     system.main_menu()
