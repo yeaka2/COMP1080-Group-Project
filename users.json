@@ -1,0 +1,16 @@
+[
+    {
+        "username": "sagirilzy",
+        "password": "6e1638dcee5d068bdbc7d882a3aee60ab87acd7bd7b73a01fd0e6e90d3b2729c",
+        "role": "admin",
+        "contact": "84958456",
+        "email": "sagirilzy@gmail.com"
+    },
+    {
+        "username": "sagirilzytest",
+        "password": "6e1638dcee5d068bdbc7d882a3aee60ab87acd7bd7b73a01fd0e6e90d3b2729c",
+        "role": "owner",
+        "contact": "123456",
+        "email": "1234567@sb.com"
+    }
+]
